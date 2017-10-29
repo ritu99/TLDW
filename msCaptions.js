@@ -11,7 +11,7 @@ const unirest = require("unirest");
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 
-app.listen(8080, "0.0.0.0")
+app.listen(3000, function(){console.log("listening")})
 app.get('/', (req, res) =>{
 	res.sendFile(__dirname  + '/Rohan.html')
 })
@@ -37,8 +37,8 @@ function talkToMicrosoft(url, videourl){
 				console.log(error);
 			}else{
 				console.log("response:\n" + response);
-				console.log("------------\nbody:\n" + body);
-
+				console.log("------------\nbody:\n" + body.replace("\"", "").replace("\"", ""));
+				body = body.replace("\"", "").replace("\"", "")
 				db.collection("videos").insertOne({videoURL: videourl, state: "Processing", url: url, id: body}, function(err, res) {
 			    if (err) throw err;
 			    console.log("1 video inserted");
@@ -75,6 +75,7 @@ function collectData(id){
 }
 
 app.post("/finished_processing", (req, res) =>  {
+	console.log("wfewefwefwefwefwe");
 	db.collection("videos").findOne({videoUrl: req.body['id']}, (err, result) => {
 		if (err) throw err;
 		console.log("finished processing a video " + req.body['id']);
@@ -83,6 +84,18 @@ app.post("/finished_processing", (req, res) =>  {
 		});
 	});
 });
+
+
+function processVideo(req){
+	console.log("wfewefwefwefwefwe");
+        db.collection("videos").findOne({videoUrl: req.body['id']}, (err, result) => {
+                if (err) throw err;
+                console.log("finished processing a video " + req.body['id']);
+                db.collection("videos").updateOne({videoUrl: req.body['id']}, {$set: {state: "Processed"}}, (err, result) => {
+                        collectData(req.body['id']);
+                });
+        });
+}
 
 function getSummary(data, id){
 	headers = {"X-Mashape-Key" : keys.mashape_api_key}
@@ -107,7 +120,14 @@ app.post("/get_data", (req, res) => {
 		if(result.state == "Processed"){
 			result.json({data: result.rawData, summary: result.sum});
 		}else{
-				res.json({"here":"there's no data"});
+			headers = {'Ocp-Apim-Subscription-Key' : keys.ms_api_key_primary}
+			request({header: headers, url:"https://videobreakdown.azure-api.net/Breakdowns/Api/Partner/Breakdowns/" + req.body['id']}, (err, response, body) => {
+				if(err) throw err;
+				if(body["state"] == "Processed"){
+					processData(req);
+				}
+			 });
+			res.json({"here":"there's no data"});
 		}
 
 	});
@@ -118,7 +138,7 @@ app.post("/summarize_video", (req, res) =>
 		console.log(req.body['video-url']);
 		db.collection("videos").findOne({videoUrl: req.body['video-url'], state: "Processed"}, (err, result) => {
 			if(err) throw err;
-	    if(result){
+			if(result){
 				console.log(result);
 				res.sendFile(__dirname + "/index.html");
 			}else{
