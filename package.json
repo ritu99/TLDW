@@ -19,8 +19,12 @@
   "dependencies": {
     "body-parser": "^1.18.2",
     "express": "^4.16.2",
+    "mocha": "^4.0.1",
     "mongodb": "^2.2.33",
-    "request": "^2.83.0"
+    "node-horseman": "^3.3.0",
+    "phantom": "^4.0.5",
+    "request": "^2.83.0",
+    "zombie": "^5.0.7"
   },
   "devDependencies": {
     "nodemon": "^1.12.1"
