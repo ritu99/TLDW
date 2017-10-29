@@ -27,7 +27,7 @@ function talkToMicrosoft(url, videourl){
 	headers = {'Ocp-Apim-Subscription-Key' : keys.ms_api_key_primary}
 	//"https://r3---sn-q4flrner.googlevideo.com/videoplayback?sparams=dur,ei,expire,id,initcwndbps,ip,ipbits,itag,lmt,mime,mip,mm,mn,ms,mv,pl,ratebypass,requiressl,source&lmt=1509161730118341&ip=2001%3A19f0%3A5%3A1de%3A5400%3Aff%3Afe4f%3A2207&expire=1509250327&id=o-APqWr8TB_HVV0hEDSdD2P_37GYHsgcY3f6pJPuIbaIua&ipbits=0&dur=117.980&mime=video%2Fmp4&key=cms1&source=youtube&itag=22&requiressl=yes&ei=tgD1We7_NpLg8wTWo6y4DQ&signature=476E73DFDB29693A078D60198791B681C612A120.2BBC833F6D45FBAEC8599E4360B2BFD016164C38&ratebypass=yes&pl=18&cms_redirect=yes&mip=139.138.146.195&mm=31&mn=sn-q4flrner&ms=au&mt=1509239450&mv=m"
 	console.log(url);
-	params = {"name" : videourl, "privacy" : "Private", "videoUrl":url, "description": videourl, "callbackUrl": "52.170.103.220/finished_processing"}
+	params = {"name" : videourl, "privacy" : "Private", "videoUrl":url, "description": videourl, "callbackUrl": "http://52.170.103.220/finished_processing"}
 	request.post({
 		headers: headers,
 		url:'https://videobreakdown.azure-api.net/Breakdowns/Api/Partner/Breakdowns?' + querystring.stringify(params)
@@ -39,7 +39,7 @@ function talkToMicrosoft(url, videourl){
 				console.log("response:\n" + response);
 				console.log("------------\nbody:\n" + body);
 
-				db.collection("videos").insertOne({videoURL: videoURL, state: "Processing", url: url, id: body}, function(err, res) {
+				db.collection("videos").insertOne({videoURL: videourl, state: "Processing", url: url, id: body}, function(err, res) {
 			    if (err) throw err;
 			    console.log("1 video inserted");
 			  });
