@@ -103,7 +103,8 @@ function getSummary(data, id){
 }
 
 app.post("/get_data", (req, res) => {
-	db.collection("groups").findOne({videoUrl: req.body['video-url'], state:"Processed"}, (err, result) => {
+	db.collection("videos").findOne({videoUrl: req.body['video-url'], state:"Processed"}, (err, result) => {
+		console.log(result);
 		if(err) throw err;
 		if(result){
 			res.json({data: result.rawData, summary: result.sum});
