@@ -18,12 +18,15 @@
   "homepage": "https://github.com/ritu99/TLDW#readme",
   "dependencies": {
     "body-parser": "^1.18.2",
+    "ejs": "^2.5.7",
     "express": "^4.16.2",
     "mocha": "^4.0.1",
     "mongodb": "^2.2.33",
     "node-horseman": "^3.3.0",
+    "nodejs-text-summarizer": "^2.0.3",
     "phantom": "^4.0.5",
     "request": "^2.83.0",
+    "sum": "^0.1.4",
     "unirest": "^0.5.1",
     "zombie": "^5.0.7"
   },

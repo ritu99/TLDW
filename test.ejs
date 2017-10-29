@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+	<meta charset="UTF-8">
+	<title>How to Control YouTube's Video Player with JavaScript</title>
+	<link href="demo.css" rel="stylesheet" type="text/css">
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+	<link href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/styles/default.min.css" rel="stylesheet">
+	<link href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/styles/tomorrow.min.css" rel="stylesheet">
+</head>
+<body>
+	<header>
+		<h1></h1>
+		<div id="sup">
+			<h1><span></span> </h1>
+		</div>
+	</header><!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
+	<div id="video-placeholder"></div>
+	<div id="strings"></div>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js">
+	</script>
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/highlight.min.js">
+	</script>
+	<script src="https://www.youtube.com/iframe_api">
+	</script>
+	<script>
+	   var player,
+	   time_update_interval = 0;
+
+	   startTimes = [10.0, 20.0, 30.0];
+	   stopTimes = [15.0, 25.0, 35.0];
+	   summaryStrings = ["hi", "hello", "what's up"];
+	   var i = 0;
+
+	function onYouTubeIframeAPIReady() {
+	   player = new YT.Player('video-placeholder', {
+	       width: 600,
+	       height: 400,
+	       videoId: '<%= videoID %>',
+	       playerVars: {
+	           color: 'white',
+	           playlist: 'taJ60kskkns,FG0fTKAqZ5g'
+	       },
+	       events: {
+	           onReady: initialize
+	       }
+	   });
+
+	}
+
+  function correctTiming(x) {
+  	var res = 0;
+  	res += 600 * x.substring(3, 4);
+  	res += 60 * x.substring(4, 5);
+  	res += x.substring(6);
+    return res;
+  }
+
+
+
+	function initialize(){
+	   // Update the controls on load
+	   updateTimerDisplay();
+	   updateProgressBar();
+
+	   // Clear any old interval.
+	   clearInterval(time_update_interval);
+
+	   // Start interval to update elapsed time display and
+	   // the elapsed part of the progress bar every second.
+	   time_update_interval = setInterval(function () {
+	       updateTimerDisplay();
+	       updateProgressBar();
+	   }, 1000);
+
+
+	   $('#volume-input').val(Math.round(player.getVolume()));
+
+	   //i added this part
+	   player.seekTo(startTimes[i]);
+     player.pauseVideo();
+	   document.getElementById("sup").innerText = "TL;DW: " + player.getVideoData().title;
+
+     document.getElementById("strings").innerHTML = "this is loading";
+
+
+	}
+
+
+  function setup(){
+    for (var j = 0; j < summaryStrings.length; j++) {
+
+        document.getElementById("strings").innerHTML += "<span id='sentencos'><button type='button' onclick='goToVideoSection(" + j + ")'>" + Math.floor(startTimes[j] / 60) + ":" + (startTimes[j]%60) + " " + summaryStrings[j] + "<\/button><\/span><br>";
+
+    }
+  }
+
+
+
+	function goToVideoSection(j) {
+	   player.seekTo(startTimes[j]);
+	   i = j;
+	}
+
+	// This function is called by initialize()
+	function updateTimerDisplay(){
+	   // Update current time text display.
+	   $('#current-time').text(formatTime( player.getCurrentTime() ));
+	   $('#duration').text(formatTime( player.getDuration() ));
+	       if (Math.abs(player.getCurrentTime()) - stopTimes[i] > 0) {
+	           i++;
+	           if (i == stopTimes.length) {
+	               i = 0;
+	               player.pauseVideo(startTimes[0]);
+	           }
+	           player.seekTo(startTimes[i]);
+	       }
+
+
+
+	}
+
+
+	// This function is called by initialize()
+	function updateProgressBar(){
+	   // Update the value of our progress bar accordingly.
+	   $('#progress-bar').val((player.getCurrentTime() / player.getDuration()) * 100);
+	}
+
+
+	// Progress bar
+
+	$('#progress-bar').on('mouseup touchend', function (e) {
+
+	   // Calculate the new time for the video.
+	   // new time in seconds = total duration in seconds * ( value of range input / 100 )
+	   var newTime = player.getDuration() * (e.target.value / 100);
+
+	   // Skip video to new time.
+	   player.seekTo(newTime);
+
+	});
+
+
+	// Playback
+
+	$('#play').on('click', function () {
+	   player.playVideo();
+	});
+
+
+	$('#pause').on('click', function () {
+	   player.pauseVideo();
+	});
+
+
+	// Sound volume
+
+
+	$('#mute-toggle').on('click', function() {
+	   var mute_toggle = $(this);
+
+	   if(player.isMuted()){
+	       player.unMute();
+	       mute_toggle.text('volume_up');
+	   }
+	   else{
+	       player.mute();
+	       mute_toggle.text('volume_off');
+	   }
+	});
+
+	$('#volume-input').on('change', function () {
+	   player.setVolume($(this).val());
+	});
+
+
+	// Other options
+
+
+	$('#speed').on('change', function () {
+	   player.setPlaybackRate($(this).val());
+	});
+
+	$('#quality').on('change', function () {
+	   player.setPlaybackQuality($(this).val());
+	});
+
+
+	// Playlist
+
+	$('#next').on('click', function () {
+	   player.nextVideo()
+	});
+
+	$('#prev').on('click', function () {
+	   player.previousVideo()
+	});
+
+
+	// Load video
+
+	$('.thumbnail').on('click', function () {
+
+	   var url = $(this).attr('data-video-id');
+
+	   player.cueVideoById(url);
+
+	});
+
+
+	// Helper Functions
+
+	function formatTime(time){
+	   time = Math.round(time);
+
+	   var minutes = Math.floor(time / 60),
+	       seconds = time - minutes * 60;
+
+	   seconds = seconds < 10 ? '0' + seconds : seconds;
+
+	   return minutes + ":" + seconds;
+	}
+
+
+	$('pre code').each(function(i, block) {
+	   hljs.highlightBlock(block);
+	});
+	</script>
+	<script>
+	   function readInitialData(data, summary) {
+
+
+
+	       var res = data.split(" --> ");
+
+
+
+	   startTimes = new Array(res.length / 3); // fix this length afterwards
+	   stopTimes = new Array(startTimes.length);
+	   summaryStrings = new Array(startTimes.length);
+	   startTimes[0] = correctTiming(res[0]);
+
+	   for (var i = 1; i <= res.length - 1; i++) {
+
+
+	       var innerRes = res[i].split(" ");
+
+
+	       if (i == res.length - 1) {
+	           stopTimes[stopTimes.length - 1] = correctTiming(innerRes[0]);
+	           var temp3 = "";
+	           for (var c = 1; c < innerRes.length; c++) {
+	           temp3 += innerRes[c] + " ";
+	           }
+	           summaryStrings[summaryStrings.length - 1] = temp3;
+
+	       } else {
+
+	       stopTimes[i - 1] = correctTiming(innerRes[0]);
+
+	       if (i !== res.length - 1) {
+	           startTimes[i] = correctTiming(innerRes[innerRes.length - 1])
+	       }
+
+	       var temp2 = "";
+	       for (var j = 1; j < innerRes.length - 1; j++) {
+	           temp2 += innerRes[j] + " ";
+	       }
+	       summaryStrings[i - 1] = temp2;
+
+	      }
+        startTimes.shift();
+        // startTimes.reverse();
+        // startTimes.pop();
+        // startTimes.reverse();
+        console.log(summary)
+        for(k = 0; k < summary.length; k++)
+        for(r = 0; r < summaryStrings.length; r++){
+
+          if(summaryStrings[r].trim().indexOf(summary[k].trim()) > 0 || summary[k].trim().indexOf(summaryStrings[r].trim()) > 0){
+            remove(summaryStrings, r);
+            remove(startTimes, r);
+            remove(stopTimes, r);
+            r--;
+          }
+        }
+
+	}
+
+
+
+	console.log(startTimes);
+	console.log(stopTimes);
+	console.log(summaryStrings);
+
+	}
+	function getCaptionsArray(data){
+
+	}
+  function remove(array, index) {
+      return array.splice(index, 1);
+  }
+	function getSummary(data){
+	 var k = getCaptions(data);
+
+	}
+	</script>
+
+  <script>
+
+  $( document ).ready(function(){
+    function repeat(){
+      $.ajax({type: "POST",
+              url: '/get_data',
+              contentType: 'application/x-www-form-urlencoded',
+              data: {id: '<%= id %>'},
+              success: function (data) {
+                console.log(data);
+                if(data.error != "none")
+                  setTimeout(function () {
+                    repeat();
+                }, 5000);
+                else
+                  readInitialData(data.data, data.summary);
+              }
+            });
+    }
+    setTimeout(function () {
+      repeat();
+  }, 2000);
+  });
+  </script>
+</body>
+</html>
