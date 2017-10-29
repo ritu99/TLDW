@@ -37,7 +37,8 @@ function talkToMicrosoft(url, videourl){
 				console.log(error);
 			}else{
 				console.log("response:\n" + response);
-				console.log("------------\nbody:\n" + body);
+				console.log("------------\nbody:\n" + body.replace("\"", "").replace("\"", ""));
+				body = body.replace("\"", "").replace("\"", "")
 
 				db.collection("videos").insertOne({videoURL: videourl, state: "Processing", url: url, id: body}, function(err, res) {
 			    if (err) throw err;
