@@ -1,0 +1,27 @@
+body{
+  overflow-y: hidden;
+}
+
+
+.fill-height{
+  height: 100%
+
+}
+
+.video{
+  /*margin-top: 8vh;*/
+  /*display: inline-block;*/
+  height: 40vh;
+  width: 60vh;
+  justify-content: center;
+  /*height: 500px;*/
+}
+
+
+.comments{
+  /*margin-top: 2vh;*/
+  overflow-y: scroll;
+  height: 40vh;
+  /*bottom: 0px;*/
+  display: inline-block;
+}
