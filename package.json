@@ -24,6 +24,7 @@
     "node-horseman": "^3.3.0",
     "phantom": "^4.0.5",
     "request": "^2.83.0",
+    "unirest": "^0.5.1",
     "zombie": "^5.0.7"
   },
   "devDependencies": {
